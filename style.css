@@ -4,13 +4,19 @@ body {
   background-color: black;
 }
 
-img {
+#image {
   z-index: -1;
   position: fixed;
   width: 100%;
   transform-origin: top left;
   user-select: none;
-  image-rendering: crisp-edges;
+}
+
+img {
+  position: fixed;
+  width: 100%;
+  user-select: none;
+  image-rendering: pixelated;
 }
 
 #IMGs {
@@ -31,13 +37,26 @@ img {
 #viewName {
   position: fixed;
   color: #fff;
-  font-size: calc((3vh + 3vw) / 2);
+  font-size: calc(1.5vh + 1.5vw);
   pointer-events: none;
   background-color: black;
   text-align: center;
-  width: calc((50vh + 50vw) / 2);
+  width: calc(25vh + 25vw);
   overflow: hidden;
-  margin-left: calc(50% - ((25vh + 25vw) / 2));
+  margin-left: calc(50% - (12.5vh + 12.5vw));
   font-family: "Roboto", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   user-select: none;
+}
+
+#fileSelect {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  padding: 20px;
+  border: 1px solid #cecece;
+  font-size: calc(1.2vh + 1.2vw);
+  background-color: black;
+  color: #cecece;
+  cursor: pointer;
 }

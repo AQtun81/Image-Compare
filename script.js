@@ -2,6 +2,7 @@
 // DOM element references
 var IMGs = document.getElementById("IMGs");
 var PreviewImage = document.getElementById("image");
+var ViewName = document.getElementById("viewName");
 
 // variables
 var DragActive = false;
@@ -10,21 +11,27 @@ var DragOffsetY = 0;
 var ImageScale = 1;
 var CursorPosX = 0;
 var CursorPosY = 0;
+var ActiveImageId = 0;
 
 /* FUNCTIONS
 ----------------------------------------- */
 
 // changes active image and updates file name
-function SwitchImagePreview(path, name) {
-  document.getElementById("image").setAttribute("src", path);
-  document.getElementById("viewName").innerText = name;
+function SwitchImagePreview(i, name) {
+  if (!PreviewImage.children[i]) return;
+  for (const child of PreviewImage.children) {
+    child.style.opacity = 0;
+  }
+  PreviewImage.children[i].style.opacity = 1;
+  ViewName.innerText = name;
+  ActiveImageId = i;
 }
 
 function UpdateImagePosition() {
   const PADDING = 100;
 
   // restrict to screen bounds
-  var rect = PreviewImage.getBoundingClientRect();
+  var rect = PreviewImage.children[ActiveImageId].getBoundingClientRect();
   if (DragOffsetX > window.innerWidth - PADDING) DragOffsetX = window.innerWidth - PADDING;   // RIGHT
   if (DragOffsetX + rect.width < PADDING) DragOffsetX = -rect.width + PADDING;                // LEFT
   if (DragOffsetY > window.innerHeight - PADDING) DragOffsetY = window.innerHeight - PADDING; // BOTTOM
@@ -56,7 +63,7 @@ function ZoomImage(y) {
   ImageScale *= scaleDifference;
 
   // calculate image offset
-  var rect = PreviewImage.getBoundingClientRect();
+  var rect = PreviewImage.children[ActiveImageId].getBoundingClientRect();
   var widthDifference = rect.width * scaleDifference - rect.width;
   var heightDifference = rect.height * scaleDifference - rect.height;
 
@@ -82,25 +89,38 @@ input.multiple = true;
 
 // file selection dialogue change event
 input.onchange = e => {
+  document.getElementById("fileSelect").style.display = "none";
 
   // create elements responsible for image change
   for (let i = 0; i < e.target.files.length; i++) {
     var reader  = new FileReader();
-    reader.onload = function(event)  {
+    var files = e.target.files;
+    reader.onload = function(event) {
+
+      // create event flexbox div
       var div = document.createElement("div");
-      div.setAttribute("name", e.target.files[i].name);
-      div.setAttribute("src", event.target.result);
+      div.setAttribute("id", i);
+      div.setAttribute("name", files[i].name);
       IMGs.appendChild(div);
+
+      // create image
+      var img = document.createElement("img");
+      img.setAttribute("src", event.target.result);
+      PreviewImage.appendChild(img);
+
       div.addEventListener('mouseover', (e) => {
-        SwitchImagePreview(div.attributes.src.value, div.attributes.name.value);
+        SwitchImagePreview(div.attributes.id.value, div.attributes.name.value);
       });
    }
    reader.readAsDataURL(e.target.files[i]);
   }
 }
 
-// display file selection dialogue window
-input.click();
+document.getElementById("fileSelect").addEventListener('click', (event) => {
+  // display file selection dialogue window
+  input.click();
+});
+
 
 /* EVENTS
 ----------------------------------------- */
