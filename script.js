@@ -20,9 +20,8 @@ var ActiveImageId = 0;
 function SwitchImagePreview(i, name) {
   if (!PreviewImage.children[i]) return;
   for (const child of PreviewImage.children) {
-    child.style.opacity = 0;
+    child.style.opacity = (child.attributes.id.value == i) ? 1 : 0
   }
-  PreviewImage.children[i].style.opacity = 1;
   ViewName.innerText = name;
   ActiveImageId = i;
 }
@@ -105,6 +104,7 @@ input.onchange = e => {
 
       // create image
       var img = document.createElement("img");
+      img.setAttribute("id", i);
       img.setAttribute("src", event.target.result);
       PreviewImage.appendChild(img);
 
