@@ -57,7 +57,7 @@ function ZoomImage(y) {
   // set scale
   var scaleDifference = 1.0;
   if (y > 0) {
-    if (ImageScale <= 0.25) return;
+    if (ImageScale <= 0.025) return;
     scaleDifference *= 0.9;
   } else {
     scaleDifference = 1.1;
@@ -90,7 +90,9 @@ input.type = 'file';
 input.multiple = true;
 
 function ProcessInput(files, isClipboard = false) {
-  document.getElementById("fileSelect").style.display = "none";
+  var fs = document.getElementById("fileSelect");
+  fs.innerText = "Add more images";
+  fs.classList.add("addMore");
 
   // create elements responsible for image change
   for (let i = 0; i < files.length; i++) {

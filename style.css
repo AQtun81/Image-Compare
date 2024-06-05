@@ -61,10 +61,21 @@ img {
   background-color: black;
   color: #cecece;
   cursor: pointer;
+  transition-duration: 0.25s;
 }
 
 #fileSelect > a {
   font-size: calc(0.6vh + 0.6vw);
   width: 100%;
   color: #fff9;
+}
+
+#fileSelect.addMore {
+  top: 0;
+  right: 0;
+  left: initial;
+  padding: 10px;
+  transform: none;
+  font-size: calc(1vh + 1vw);
+  border: none;
 }
