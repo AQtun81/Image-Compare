@@ -130,6 +130,13 @@ input.onchange = e => ProcessInput(e.target.files);
 // clipboard event
 window.addEventListener('paste', e => ProcessInput(e.clipboardData.files, true));
 
+// image drag and drop
+window.addEventListener('drop', e => {
+  e.preventDefault();
+  ProcessInput(e.dataTransfer.files);
+});
+document.addEventListener("dragover", function(event) {event.preventDefault();});
+
 // display file selection dialogue window
 document.getElementById("fileSelect").addEventListener('click', (event) => {input.click();});
 
