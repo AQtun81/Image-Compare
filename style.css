@@ -49,6 +49,8 @@ img {
 }
 
 #fileSelect {
+  display: flex;
+  flex-direction: column;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -59,4 +61,10 @@ img {
   background-color: black;
   color: #cecece;
   cursor: pointer;
+}
+
+#fileSelect > a {
+  font-size: calc(0.6vh + 0.6vw);
+  width: 100%;
+  color: #fff9;
 }

@@ -12,6 +12,7 @@ var ImageScale = 1;
 var CursorPosX = 0;
 var CursorPosY = 0;
 var ActiveImageId = 0;
+var TotalImageCount = 0;
 
 /* FUNCTIONS
 ----------------------------------------- */
@@ -28,6 +29,7 @@ function SwitchImagePreview(i, name) {
 
 function UpdateImagePosition() {
   const PADDING = 100;
+  if (PreviewImage.children.length < 1) return;
 
   // restrict to screen bounds
   var rect = PreviewImage.children[ActiveImageId].getBoundingClientRect();
@@ -50,6 +52,7 @@ function DragImage(x, y) {
 }
 
 function ZoomImage(y) {
+  if (PreviewImage.children.length < 1) return;
 
   // set scale
   var scaleDifference = 1.0;
@@ -81,46 +84,52 @@ function ZoomImage(y) {
 /* FILE SELECTION DIALOGUE
 ----------------------------------------- */
 
-// open file selection dialogue
+// create input DOM element
 var input = document.createElement('input');
 input.type = 'file';
 input.multiple = true;
 
-// file selection dialogue change event
-input.onchange = e => {
+function ProcessInput(files, isClipboard = false) {
   document.getElementById("fileSelect").style.display = "none";
 
   // create elements responsible for image change
-  for (let i = 0; i < e.target.files.length; i++) {
+  for (let i = 0; i < files.length; i++) {
     var reader  = new FileReader();
-    var files = e.target.files;
     reader.onload = function(event) {
 
       // create event flexbox div
       var div = document.createElement("div");
-      div.setAttribute("id", i);
-      div.setAttribute("name", files[i].name);
+      div.setAttribute("id", TotalImageCount);
+      if (isClipboard) {
+        div.setAttribute("name", `Clipboard ${TotalImageCount}`);
+      } else {
+        div.setAttribute("name", files[i].name);
+      }
       IMGs.appendChild(div);
 
       // create image
       var img = document.createElement("img");
-      img.setAttribute("id", i);
+      img.setAttribute("id", TotalImageCount);
       img.setAttribute("src", event.target.result);
       PreviewImage.appendChild(img);
 
       div.addEventListener('mouseover', (e) => {
         SwitchImagePreview(div.attributes.id.value, div.attributes.name.value);
       });
+      TotalImageCount++;
    }
-   reader.readAsDataURL(e.target.files[i]);
+   reader.readAsDataURL(files[i]);
   }
 }
 
-document.getElementById("fileSelect").addEventListener('click', (event) => {
-  // display file selection dialogue window
-  input.click();
-});
+// choose files button event
+input.onchange = e => ProcessInput(e.target.files);
 
+// clipboard event
+window.addEventListener('paste', e => ProcessInput(e.clipboardData.files, true));
+
+// display file selection dialogue window
+document.getElementById("fileSelect").addEventListener('click', (event) => {input.click();});
 
 /* EVENTS
 ----------------------------------------- */
