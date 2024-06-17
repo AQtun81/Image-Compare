@@ -145,25 +145,30 @@ document.getElementById("fileSelect").addEventListener('click', (event) => {inpu
 
 // drag active event
 IMGs.addEventListener('mousedown', (event) => {
+  event.preventDefault();
   DragActive = true;
 });
 
 // drag inactive event
 IMGs.addEventListener('mouseup', (event) => {
+  event.preventDefault();
   DragActive = false;
 });
 
 // mouse move event
 IMGs.addEventListener('mousemove', (event) => {
+  event.preventDefault();
   DragImage(event.movementX, event.movementY);
 });
 
 // mouse wheel event
 IMGs.addEventListener('wheel', (event) => {
+  event.preventDefault();
   ZoomImage(event.deltaY);
 });
 
 document.addEventListener('mousemove', (event) => {
+  event.preventDefault();
   CursorPosX = event.clientX;
   CursorPosY = event.clientY;
 });
