@@ -19,12 +19,18 @@ var TotalImageCount = 0;
 
 // changes active image and updates file name
 function SwitchImagePreview(i, name) {
+  if (DragActive) return;
   if (!PreviewImage.children[i]) return;
   for (const child of PreviewImage.children) {
     child.style.opacity = (child.attributes.id.value == i) ? 1 : 0
   }
   ViewName.innerText = name;
   ActiveImageId = i;
+}
+
+function SwitchImagePreviewFromCursorPosition() {
+  var element = document.elementFromPoint(CursorPosX, CursorPosY);
+  SwitchImagePreview(element.attributes.id.value, element.attributes.name.value);
 }
 
 function UpdateImagePosition() {
@@ -99,29 +105,50 @@ function ProcessInput(files, isClipboard = false) {
     var reader  = new FileReader();
     reader.onload = function(event) {
 
-      // create event flexbox div
-      var div = document.createElement("div");
-      div.setAttribute("id", TotalImageCount);
       if (isClipboard) {
-        div.setAttribute("name", `Clipboard ${TotalImageCount}`);
+        CreateImage(`Clipboard ${TotalImageCount}`, TotalImageCount, event.target.result);
       } else {
-        div.setAttribute("name", files[i].name);
+        CreateImage(files[i].name, TotalImageCount, event.target.result);
       }
-      IMGs.appendChild(div);
 
-      // create image
-      var img = document.createElement("img");
-      img.setAttribute("id", TotalImageCount);
-      img.setAttribute("src", event.target.result);
-      PreviewImage.appendChild(img);
-
-      div.addEventListener('mouseover', (e) => {
-        SwitchImagePreview(div.attributes.id.value, div.attributes.name.value);
-      });
       TotalImageCount++;
    }
    reader.readAsDataURL(files[i]);
   }
+}
+
+function checkImage(url){
+  const extensions = [".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".heif", ".heic", ".tiff", ".bmp"];
+  var paramless = url.split('?')[0];
+  for (let i = 0; i < extensions.length; i++) {
+    if (paramless.endsWith(extensions[i])) return true;
+  }
+ 
+  return false;
+}
+
+function ProcessInputURL(url) {
+  if (!checkImage(url)) return;
+  CreateImage(url.split('?')[0].split('/').at(-1), TotalImageCount, url);
+  TotalImageCount++;
+}
+
+function CreateImage(name, id, src) {
+    // create event flexbox div
+    var div = document.createElement("div");
+    div.setAttribute("id", id);
+    div.setAttribute("name", name);
+    IMGs.appendChild(div);
+  
+    // create image
+    var img = document.createElement("img");
+    img.setAttribute("id", id);
+    img.setAttribute("src", src);
+    PreviewImage.appendChild(img);
+
+    div.addEventListener('mouseover', (e) => {
+      SwitchImagePreview(div.attributes.id.value, div.attributes.name.value);
+    });
 }
 
 // choose files button event
@@ -133,7 +160,10 @@ window.addEventListener('paste', e => ProcessInput(e.clipboardData.files, true))
 // image drag and drop
 window.addEventListener('drop', e => {
   e.preventDefault();
+  var str = e.dataTransfer.getData("text");
+  if (str != "") ProcessInputURL(str);
   ProcessInput(e.dataTransfer.files);
+  SwitchImagePreviewFromCursorPosition();
 });
 document.addEventListener("dragover", function(event) {event.preventDefault();});
 
@@ -153,6 +183,7 @@ IMGs.addEventListener('mousedown', (event) => {
 IMGs.addEventListener('mouseup', (event) => {
   event.preventDefault();
   DragActive = false;
+  SwitchImagePreviewFromCursorPosition();
 });
 
 // mouse move event
