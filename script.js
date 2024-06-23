@@ -29,6 +29,7 @@ function SwitchImagePreview(i, name) {
 }
 
 function SwitchImagePreviewFromCursorPosition() {
+  if (PreviewImage.children.length <= 0) return;
   var element = document.elementFromPoint(CursorPosX, CursorPosY);
   SwitchImagePreview(element.attributes.id.value, element.attributes.name.value);
 }
@@ -155,7 +156,12 @@ function CreateImage(name, id, src) {
 input.onchange = e => ProcessInput(e.target.files);
 
 // clipboard event
-window.addEventListener('paste', e => ProcessInput(e.clipboardData.files, true));
+window.addEventListener('paste', e => {
+  e.preventDefault();
+  var str = e.clipboardData.getData("text");
+  if (str != "") ProcessInputURL(str);
+  ProcessInput(e.clipboardData.files, true);
+});
 
 // image drag and drop
 window.addEventListener('drop', e => {
