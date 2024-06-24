@@ -2,7 +2,6 @@
 // DOM element references
 var IMGs = document.getElementById("IMGs");
 var PreviewImage = document.getElementById("image");
-var ViewName = document.getElementById("viewName");
 
 // variables
 var DragActive = false;
@@ -11,27 +10,40 @@ var DragOffsetY = 0;
 var ImageScale = 1;
 var CursorPosX = 0;
 var CursorPosY = 0;
-var ActiveImageId = 0;
+var ActiveImagePreviewElement = null;
 var TotalImageCount = 0;
+var DraggedTab = null;
 
 /* FUNCTIONS
 ----------------------------------------- */
 
-// changes active image and updates file name
-function SwitchImagePreview(i, name) {
+// changes active image
+function SwitchImagePreview(i) {
   if (DragActive) return;
-  if (!PreviewImage.children[i]) return;
-  for (const child of PreviewImage.children) {
-    child.style.opacity = (child.attributes.id.value == i) ? 1 : 0
+  for (let j = 0; j < PreviewImage.children.length; j++) {
+    if (PreviewImage.children[j].attributes.uid.value == i) {
+      ActiveImagePreviewElement = PreviewImage.children[j];
+      break;
+    }
   }
-  ViewName.innerText = name;
-  ActiveImageId = i;
+  for (const child of PreviewImage.children) {
+    child.style.opacity = (child.attributes.uid.value == i) ? 1 : 0;
+  }
+  for (const child of IMGs.children) {
+    if (typeof child.attributes.uid === 'undefined') continue;
+    if (child.attributes.uid.value == i) {
+      child.classList.add("active");
+    } else {
+      child.classList.remove("active");
+    }
+  }
 }
 
 function SwitchImagePreviewFromCursorPosition() {
-  if (PreviewImage.children.length <= 0) return;
   var element = document.elementFromPoint(CursorPosX, CursorPosY);
-  SwitchImagePreview(element.attributes.id.value, element.attributes.name.value);
+  element = TopDataElement(element);
+  if (typeof element.attributes.uid === 'undefined') return;
+  SwitchImagePreview(element.attributes.uid.value);
 }
 
 function UpdateImagePosition() {
@@ -39,7 +51,7 @@ function UpdateImagePosition() {
   if (PreviewImage.children.length < 1) return;
 
   // restrict to screen bounds
-  var rect = PreviewImage.children[ActiveImageId].getBoundingClientRect();
+  var rect = ActiveImagePreviewElement.getBoundingClientRect();
   if (DragOffsetX > window.innerWidth - PADDING) DragOffsetX = window.innerWidth - PADDING;   // RIGHT
   if (DragOffsetX + rect.width < PADDING) DragOffsetX = -rect.width + PADDING;                // LEFT
   if (DragOffsetY > window.innerHeight - PADDING) DragOffsetY = window.innerHeight - PADDING; // BOTTOM
@@ -72,7 +84,7 @@ function ZoomImage(y) {
   ImageScale *= scaleDifference;
 
   // calculate image offset
-  var rect = PreviewImage.children[ActiveImageId].getBoundingClientRect();
+  var rect = ActiveImagePreviewElement.getBoundingClientRect();
   var widthDifference = rect.width * scaleDifference - rect.width;
   var heightDifference = rect.height * scaleDifference - rect.height;
 
@@ -88,7 +100,20 @@ function ZoomImage(y) {
   PreviewImage.style.transform = "scale(" + ImageScale + ")";
 }
 
-/* FILE SELECTION DIALOGUE
+function TopDataElement(element) {
+  for (let i = 0; i < 10; i++) {
+    if (typeof element.attributes.uid === 'undefined')
+    {
+      if (!element.parentElement) break;
+      element = element.parentElement;
+    } else {
+      break;
+    }
+  }
+  return element;
+}
+
+/* FILE SELECTION DIALOG
 ----------------------------------------- */
 
 // create input DOM element
@@ -98,8 +123,9 @@ input.multiple = true;
 
 function ProcessInput(files, isClipboard = false) {
   var fs = document.getElementById("fileSelect");
-  fs.innerText = "Add more images";
+  fs.innerText = "";
   fs.classList.add("addMore");
+  IMGs.appendChild(fs);
 
   // create elements responsible for image change
   for (let i = 0; i < files.length; i++) {
@@ -137,20 +163,37 @@ function ProcessInputURL(url) {
 function CreateImage(name, id, src) {
     // create event flexbox div
     var div = document.createElement("div");
-    div.setAttribute("id", id);
+    div.setAttribute("uid", id);
     div.setAttribute("name", name);
+    var imageHeading = document.createElement("div");
+    imageHeading.classList.add("imageName");
+    imageHeading.setAttribute("draggable", true);
+    imageHeading.addEventListener("dragstart", (e) => {
+      DraggedTab = e.target;
+    });
+    var imageName = document.createElement("p");
+    imageName.innerText = name;
+    var imageCloseButton = document.createElement("button");
+    imageCloseButton.onclick = function(){CloseImage(imageCloseButton)};
+    imageHeading.appendChild(imageName);
+    imageHeading.appendChild(imageCloseButton);
+    div.appendChild(imageHeading);
     IMGs.appendChild(div);
+    IMGs.appendChild(document.getElementById("fileSelect"));
   
     // create image
     var img = document.createElement("img");
-    img.setAttribute("id", id);
+    img.setAttribute("uid", id);
     img.setAttribute("src", src);
     PreviewImage.appendChild(img);
 
     div.addEventListener('mouseover', (e) => {
-      SwitchImagePreview(div.attributes.id.value, div.attributes.name.value);
+      SwitchImagePreview(div.attributes.uid.value);
     });
 }
+
+/* EVENTS
+----------------------------------------- */
 
 // choose files button event
 input.onchange = e => ProcessInput(e.target.files);
@@ -166,28 +209,42 @@ window.addEventListener('paste', e => {
 // image drag and drop
 window.addEventListener('drop', e => {
   e.preventDefault();
+  DragActive = false;
+
   var str = e.dataTransfer.getData("text");
   if (str != "") ProcessInputURL(str);
+
   ProcessInput(e.dataTransfer.files);
+
   SwitchImagePreviewFromCursorPosition();
+
+  if (DraggedTab) {
+    if (!e.target) return;
+    var target = TopDataElement(e.target);
+    if (typeof target.attributes.uid === 'undefined') return;
+    DraggedTab = TopDataElement(DraggedTab);
+
+    if (DraggedTab.offsetLeft > target.offsetLeft) {
+      IMGs.insertBefore(DraggedTab, target);
+    } else {
+      var targetPos = GetTabPosition(target.attributes.uid.value);
+      IMGs.insertBefore(DraggedTab, IMGs.children[targetPos + 1]);
+    }
+    DraggedTab = null;
+  }
 });
 document.addEventListener("dragover", function(event) {event.preventDefault();});
 
 // display file selection dialogue window
 document.getElementById("fileSelect").addEventListener('click', (event) => {input.click();});
 
-/* EVENTS
------------------------------------------ */
-
 // drag active event
 IMGs.addEventListener('mousedown', (event) => {
-  event.preventDefault();
   DragActive = true;
 });
 
 // drag inactive event
 IMGs.addEventListener('mouseup', (event) => {
-  event.preventDefault();
   DragActive = false;
   SwitchImagePreviewFromCursorPosition();
 });
@@ -209,3 +266,33 @@ document.addEventListener('mousemove', (event) => {
   CursorPosX = event.clientX;
   CursorPosY = event.clientY;
 });
+
+/* TABS
+----------------------------------------- */
+
+function GetTabPosition(id) {
+  for (let i = 0; i < IMGs.children.length; i++) {
+    if (id == IMGs.children[i].attributes.uid.value) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function CloseImage(element) {
+  element = TopDataElement(element);
+
+  var id = element.attributes.uid.value;
+
+  for (let i = 0; i < IMGs.childNodes.length - 1; i++) {
+    if (IMGs.childNodes[i].attributes.uid.value == id) {
+      IMGs.childNodes[i].remove();
+    }
+  }
+
+  for (let i = 0; i < PreviewImage.childNodes.length; i++) {
+    if (PreviewImage.childNodes[i].attributes.uid.value == id) {
+      PreviewImage.childNodes[i].remove();
+    }
+  }
+}

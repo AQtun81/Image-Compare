@@ -1,3 +1,7 @@
+* {
+  font-family: Inter, HelveticaNeue, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -29,9 +33,10 @@ img {
 
 #IMGs > div {
   display: flex;
+  flex-direction: column;
   flex: 1;
   background: transparent;
-  font-size: 0;
+  min-width: 0;
 }
 
 #viewName {
@@ -44,7 +49,6 @@ img {
   width: calc(25vh + 25vw);
   overflow: hidden;
   margin-left: calc(50% - (12.5vh + 12.5vw));
-  font-family: "Roboto", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
   user-select: none;
 }
 
@@ -56,26 +60,83 @@ img {
   left: 50%;
   transform: translate(-50%,-50%);
   padding: 20px;
-  border: 1px solid #cecece;
+  border: 1px solid #444;
   font-size: calc(1.2vh + 1.2vw);
-  background-color: black;
-  color: #cecece;
+  background-color: #222;
+  color: #ddd;
   cursor: pointer;
   transition-duration: 0.25s;
+  border-radius: 15px;
 }
 
-#fileSelect > a {
+#fileSelect a {
+  color: #888;
   font-size: calc(0.6vh + 0.6vw);
-  width: 100%;
-  color: #fff9;
 }
 
 #fileSelect.addMore {
   top: 0;
-  right: 0;
   left: initial;
-  padding: 10px;
+  padding: 0;
   transform: none;
   font-size: calc(1vh + 1vw);
-  border: none;
+  border-radius: 0 0 8px 8px;
+  position: relative;
+  border-top: 0;
+  margin: 0 2.5px;
+  aspect-ratio: 1;
+  height: 35px;
+  cursor: pointer;
+  transition-duration: 0s;
+  background-image: url(img/add.svg);
+  background-size: contain;
 }
+#fileSelect.addMore:hover {
+  background-color: #333;
+}
+
+ .imageName {
+  display: flex;
+  background-color: #222;
+  border: 1px solid #444;
+  border-top: 0;
+  margin: 0 2.5px;
+  border-radius: 0 0 8px 8px;
+  transition-duration: 0.1s;
+  cursor: grab;
+ }
+
+ .active > .imageName {
+  background-color: #333;
+ }
+
+ .imageName p {
+  color: #ddd;
+  font-size: 28px;
+  text-align: center;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+  margin: 0;
+  flex-grow: 1;
+ }
+
+ .imageName button {
+  height: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  border: 0;
+  float: right;
+  mask-image: url(img/remove.svg);
+  mask-size: contain;
+  transform: scale(0.65);
+  background-color: #888;
+  cursor: pointer;
+ }
+
+ .imageName button:hover {
+   mask-image: url(img/remove-box.svg);
+   transform: scale(1);
+  background-color: #c44747;
+ }
