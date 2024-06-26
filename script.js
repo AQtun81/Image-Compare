@@ -13,6 +13,7 @@ var CursorPosY = 0;
 var ActiveImagePreviewElement = null;
 var TotalImageCount = 0;
 var DraggedTab = null;
+var FileSelectInnerHTML = document.getElementById("fileSelect").innerHTML;
 
 /* FUNCTIONS
 ----------------------------------------- */
@@ -122,11 +123,6 @@ input.type = 'file';
 input.multiple = true;
 
 function ProcessInput(files, isClipboard = false) {
-  var fs = document.getElementById("fileSelect");
-  fs.innerText = "";
-  fs.classList.add("addMore");
-  IMGs.appendChild(fs);
-
   // create elements responsible for image change
   for (let i = 0; i < files.length; i++) {
     var reader  = new FileReader();
@@ -141,6 +137,21 @@ function ProcessInput(files, isClipboard = false) {
       TotalImageCount++;
    }
    reader.readAsDataURL(files[i]);
+  }
+  
+  ManageFileSelectDialog(0);
+}
+
+function ManageFileSelectDialog(t) {
+  var fs = document.getElementById("fileSelect");
+  if (t == 0) {
+    fs.innerText = "";
+    fs.classList.add("addMore");
+    IMGs.appendChild(fs);
+  } else if (IMGs.children.length <= t) {
+    fs.innerHTML = FileSelectInnerHTML;
+    fs.classList.remove("addMore");
+    document.body.appendChild(fs);
   }
 }
 
@@ -158,6 +169,8 @@ function ProcessInputURL(url) {
   if (!checkImage(url)) return;
   CreateImage(url.split('?')[0].split('/').at(-1), TotalImageCount, url);
   TotalImageCount++;
+
+  ManageFileSelectDialog(0);
 }
 
 function CreateImage(name, id, src) {
@@ -170,6 +183,11 @@ function CreateImage(name, id, src) {
     imageHeading.setAttribute("draggable", true);
     imageHeading.addEventListener("dragstart", (e) => {
       DraggedTab = e.target;
+    });
+    imageHeading.addEventListener("auxclick", (e) => {
+      if (e.button == 1) {
+        CloseImage(imageHeading);
+      }
     });
     var imageName = document.createElement("p");
     imageName.innerText = name;
@@ -212,9 +230,12 @@ window.addEventListener('drop', e => {
   DragActive = false;
 
   var str = e.dataTransfer.getData("text");
-  if (str != "") ProcessInputURL(str);
-
-  ProcessInput(e.dataTransfer.files);
+  if (str != "")
+  {
+    ProcessInputURL(str);
+  } else {
+    ProcessInput(e.dataTransfer.files);
+  }
 
   SwitchImagePreviewFromCursorPosition();
 
@@ -295,4 +316,6 @@ function CloseImage(element) {
       PreviewImage.childNodes[i].remove();
     }
   }
+
+  ManageFileSelectDialog(1);
 }
