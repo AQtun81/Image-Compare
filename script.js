@@ -189,8 +189,13 @@ function CreateImage(name, id, src) {
         CloseImage(imageHeading);
       }
     });
-    var imageName = document.createElement("p");
-    imageName.innerText = name;
+    var imageName = document.createElement("input");
+    imageName.value = name;
+    imageName.addEventListener('mousedown', (e) => {
+      if (e.button == 1) {
+        e.preventDefault();
+      }
+    });
     var imageCloseButton = document.createElement("button");
     imageCloseButton.onclick = function(){CloseImage(imageCloseButton)};
     imageHeading.appendChild(imageName);

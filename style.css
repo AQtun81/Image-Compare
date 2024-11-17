@@ -110,7 +110,7 @@ img {
   background-color: #333;
  }
 
- .imageName p {
+ .imageName input {
   color: #ddd;
   font-size: 28px;
   text-align: center;
@@ -120,6 +120,11 @@ img {
   user-select: none;
   margin: 0;
   flex-grow: 1;
+  background-color: transparent;
+  border: 0;
+  outline: 0;
+  cursor: grab;
+  min-width: 0;
  }
 
  .imageName button {
