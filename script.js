@@ -2,6 +2,7 @@
 // DOM element references
 var IMGs = document.getElementById("IMGs");
 var PreviewImage = document.getElementById("image");
+var dropIndicator = document.getElementById("dropIndicator");
 
 // variables
 var DragActive = false;
@@ -183,6 +184,8 @@ function CreateImage(name, id, src) {
     imageHeading.setAttribute("draggable", true);
     imageHeading.addEventListener("dragstart", (e) => {
       DraggedTab = e.target;
+      dropIndicator.style.display = "block";
+      UpdateDropIndicator();
     });
     imageHeading.addEventListener("auxclick", (e) => {
       if (e.button == 1) {
@@ -259,7 +262,11 @@ window.addEventListener('drop', e => {
     DraggedTab = null;
   }
 });
-document.addEventListener("dragover", function(event) {event.preventDefault();});
+document.addEventListener("dragover", function(event) {
+  event.preventDefault();
+  CursorPosX = event.clientX;
+  CursorPosY = event.clientY;
+});
 
 // display file selection dialogue window
 document.getElementById("fileSelect").addEventListener('click', (event) => {input.click();});
@@ -323,4 +330,21 @@ function CloseImage(element) {
   }
 
   ManageFileSelectDialog(1);
+}
+
+function UpdateDropIndicator() {
+  if (!DraggedTab) {
+    dropIndicator.style.display = "none";
+    return;
+  }
+
+  for (let i = 0; i < IMGs.children.length - 1; i++) {
+    const img = IMGs.children[i];
+    if (IMGs.children[i + 1].offsetLeft > CursorPosX) {
+      dropIndicator.style.left = (img.offsetLeft) + "px";
+      break;
+    }
+  }
+
+  requestAnimationFrame(UpdateDropIndicator);
 }
